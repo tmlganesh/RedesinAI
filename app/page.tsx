@@ -7,26 +7,15 @@ import { appConfig } from '@/config/app.config';
 import { toast } from "sonner";
 
 // Import shared components
-import { Connector } from "@/components/shared/layout/curvy-rect";
-import HeroFlame from "@/components/shared/effects/flame/hero-flame";
-import AsciiExplosion from "@/components/shared/effects/flame/ascii-explosion";
 import { HeaderProvider } from "@/components/shared/header/HeaderContext";
 
 // Import hero section components
-import HomeHeroBackground from "@/components/app/(home)/sections/hero/Background/Background";
-import { BackgroundOuterPiece } from "@/components/app/(home)/sections/hero/Background/BackgroundOuterPiece";
-import HomeHeroBadge from "@/components/app/(home)/sections/hero/Badge/Badge";
-import HomeHeroPixi from "@/components/app/(home)/sections/hero/Pixi/Pixi";
 import HomeHeroTitle from "@/components/app/(home)/sections/hero/Title/Title";
 import HeroInputSubmitButton from "@/components/app/(home)/sections/hero-input/Button/Button";
-// import Globe from "@/components/app/(home)/sections/hero-input/_svg/Globe";
 
 // Import header components
 import HeaderBrandKit from "@/components/shared/header/BrandKit/BrandKit";
-import HeaderWrapper from "@/components/shared/header/Wrapper/Wrapper";
 import HeaderDropdownWrapper from "@/components/shared/header/Dropdown/Wrapper/Wrapper";
-import GithubIcon from "@/components/shared/header/Github/_svg/GithubIcon";
-import ButtonUI from "@/components/ui/shadcn/button"
 
 interface SearchResult {
   url: string;
@@ -199,84 +188,49 @@ export default function HomePage() {
 
   return (
     <HeaderProvider>
-      <div className="min-h-screen bg-background-base">
-        {/* Header/Navigation Section */}
-        <HeaderDropdownWrapper />
+      <div className="min-h-screen bg-white">
+        {/* Clean header - no complex dropdowns */}
 
-        <div className="sticky top-0 left-0 w-full z-[101] bg-background-base header">
-          <div className="absolute top-0 cmw-container border-x border-border-faint h-full pointer-events-none" />
-          <div className="h-1 bg-border-faint w-full left-0 -bottom-1 absolute" />
-          <div className="cmw-container absolute h-full pointer-events-none top-0">
-            <Connector className="absolute -left-[10.5px] -bottom-11" />
-            <Connector className="absolute -right-[10.5px] -bottom-11" />
+        <div className="sticky top-0 left-0 w-full z-[101] bg-white border-b border-gray-100">
+          <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <HeaderBrandKit />
           </div>
-
-          <HeaderWrapper>
-            <div className="max-w-[900px] mx-auto w-full flex justify-between items-center">
-              <div className="flex gap-24 items-center">
-                <HeaderBrandKit />
-              </div>
-              <div className="flex gap-8">
-                <a
-                  className="contents"
-                  href="https://github.com/mendableai/open-lovable"
-                  target="_blank"
-                >
-                  <ButtonUI variant="tertiary">
-                    <GithubIcon />
-                    Use this Template
-                  </ButtonUI>
-                </a>
-              </div>
-            </div>
-          </HeaderWrapper>
         </div>
 
-        {/* Hero Section */}
-        <section className="overflow-x-clip" id="home-hero">
-          <div className="pt-28 lg:pt-254 lg:-mt-100 pb-115 relative" id="hero-content">
-            <HomeHeroPixi />
-            <HeroFlame />
-            <BackgroundOuterPiece />
-            <HomeHeroBackground />
-
-            <div className="relative container px-16">
-              <HomeHeroBadge />
-              <HomeHeroTitle />
-              <p className="text-center text-body-large">
-                Re-imagine any website, in seconds.
-              </p>
-              <Link
-                className="bg-black-alpha-4 hover:bg-black-alpha-6 rounded-6 px-8 lg:px-6 text-label-large h-30 lg:h-24 block mt-8 mx-auto w-max gap-4 transition-all"
-                href="#"
-                onClick={(e) => e.preventDefault()}
-              >
-                Powered by Firecrawl.
-              </Link>
-            </div>
+        {/* Hero Section - Glassmorphism Design */}
+        <section className="min-h-screen relative overflow-hidden" id="home-hero">
+          {/* Animated Background */}
+          <div className="absolute inset-0">
+            {/* Base gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50"></div>
+            
+            {/* Floating glass orbs */}
+            <div className="absolute top-20 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-gradient-to-r from-pink-400/20 to-orange-400/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+            <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-r from-purple-400/20 to-blue-400/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+            
+            {/* Subtle grid pattern */}
+            <div className="absolute inset-0 opacity-[0.02]" style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,0,0,0.15) 1px, transparent 0)`,
+              backgroundSize: '20px 20px'
+            }}></div>
           </div>
 
-          {/* Mini Playground Input */}
-          <div className="container lg:contents !p-16 relative -mt-90">
-            <div className="absolute top-0 left-[calc(50%-50vw)] w-screen h-1 bg-border-faint lg:hidden" />
-            <div className="absolute bottom-0 left-[calc(50%-50vw)] w-screen h-1 bg-border-faint lg:hidden" />
-            <Connector className="-top-10 -left-[10.5px] lg:hidden" />
-            <Connector className="-top-10 -right-[10.5px] lg:hidden" />
-            <Connector className="-bottom-10 -left-[10.5px] lg:hidden" />
-            <Connector className="-bottom-10 -right-[10.5px] lg:hidden" />
+          {/* Main Content - Centered */}
+          <div className="relative z-10 flex items-center justify-center min-h-screen px-6">
+            <div className="text-center">
+              <div className="mb-8">
+                <HomeHeroTitle />
+                <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+                  Re-imagine any website, in seconds.
+                </p>
+              </div>
 
-            {/* Hero Input Component */}
-            <div className="max-w-552 mx-auto z-[11] lg:z-[2]">
-              <div className="rounded-20 -mt-30 lg:-mt-30">
-                <div
-                  className="bg-white rounded-20"
-                  style={{
-                    boxShadow:
-                      "0px 0px 44px 0px rgba(0, 0, 0, 0.02), 0px 88px 56px -20px rgba(0, 0, 0, 0.03), 0px 56px 56px -20px rgba(0, 0, 0, 0.02), 0px 32px 32px -20px rgba(0, 0, 0, 0.03), 0px 16px 24px -12px rgba(0, 0, 0, 0.03), 0px 0px 0px 1px rgba(0, 0, 0, 0.05), 0px 0px 0px 10px #F9F9F9",
-                  }}
-                >
+              {/* Glassmorphism Search Container */}
+              <div className="w-full max-w-2xl mx-auto">
+                <div className="glass-container relative backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-2xl shadow-black/10">
 
-                <div className="p-16 flex gap-12 items-center w-full relative bg-white rounded-20">
+                  <div className="p-6 flex gap-3 items-center w-full relative bg-white/40 backdrop-blur-sm rounded-xl border border-white/20">
                   {/* Show different UI when search results are displayed */}
                   {hasSearched && searchResults.length > 0 && !isFadingOut ? (
                     <>
@@ -357,35 +311,35 @@ export default function HomePage() {
                           <path d="M12.5 12.5L16.5 16.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                         </svg>
                       )}
-                      <input
-                        className="flex-1 bg-transparent text-body-input text-accent-black placeholder:text-black-alpha-48 focus:outline-none focus:ring-0 focus:border-transparent"
-                        placeholder="Enter URL or search term..."
-                        type="text"
-                        value={url}
-                        disabled={isSearching}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setUrl(value);
-                          setIsValidUrl(validateUrl(value));
-                          // Reset search state when input changes
-                          if (value.trim() === "") {
-                            setShowSearchTiles(false);
-                            setHasSearched(false);
-                            setSearchResults([]);
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && !isSearching) {
-                            e.preventDefault();
-                            handleSubmit();
-                          }
-                        }}
-                        onFocus={() => {
-                          if (url.trim() && !isURL(url) && searchResults.length > 0) {
-                            setShowSearchTiles(true);
-                          }
-                        }}
-                      />
+                        <input
+                          className="flex-1 bg-transparent text-base text-gray-800 placeholder:text-gray-500 focus:outline-none"
+                          placeholder="Enter URL or search term..."
+                          type="text"
+                          value={url}
+                          disabled={isSearching}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setUrl(value);
+                            setIsValidUrl(validateUrl(value));
+                            // Reset search state when input changes
+                            if (value.trim() === "") {
+                              setShowSearchTiles(false);
+                              setHasSearched(false);
+                              setSearchResults([]);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !isSearching) {
+                              e.preventDefault();
+                              handleSubmit();
+                            }
+                          }}
+                          onFocus={() => {
+                            if (url.trim() && !isURL(url) && searchResults.length > 0) {
+                              setShowSearchTiles(true);
+                            }
+                          }}
+                        />
                       <div
                         onClick={(e) => {
                           e.preventDefault();
@@ -410,8 +364,8 @@ export default function HomePage() {
                 <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
                   isValidUrl ? 'max-h-[200px] opacity-100' : 'max-h-0 opacity-0'
                 }`}>
-                  <div className="p-[28px]">
-                    <div className="border-t border-gray-100 bg-white">
+                    <div className="p-[28px]">
+                      <div className="border-t border-white/20 bg-white/10 backdrop-blur-sm rounded-b-xl">
                       {/* Style Selector */}
                       <div className={`mb-2 pt-4 transition-all duration-300 transform ${
                         isValidUrl ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
@@ -445,11 +399,11 @@ export default function HomePage() {
                         isValidUrl ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
                       }`} style={{ transitionDelay: '400ms' }}>
                         {/* Model Dropdown */}
-                        <select
-                          value={selectedModel}
-                          onChange={(e) => setSelectedModel(e.target.value)}
-                          className="px-3 py-2.5 text-[10px] font-medium text-gray-700 bg-white rounded border border-gray-200 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-                        >
+                          <select
+                            value={selectedModel}
+                            onChange={(e) => setSelectedModel(e.target.value)}
+                            className="px-3 py-2.5 text-[10px] font-medium text-gray-700 bg-white/60 backdrop-blur-sm rounded border border-white/30 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                          >
                           {models.map((model) => (
                             <option key={model.id} value={model.id}>
                               {model.name}
@@ -457,22 +411,17 @@ export default function HomePage() {
                           ))}
                         </select>
                         
-                        {/* Additional Instructions */}
-                        <input
-                          type="text"
-                          className="flex-1 px-3 py-2.5 text-[10px] text-gray-700 bg-gray-50 rounded border border-gray-200 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 placeholder:text-gray-400"
-                          placeholder="Additional instructions (optional)"
-                          onChange={(e) => sessionStorage.setItem('additionalInstructions', e.target.value)}
-                        />
+                          {/* Additional Instructions */}
+                          <input
+                            type="text"
+                            className="flex-1 px-3 py-2.5 text-[10px] text-gray-700 bg-white/40 backdrop-blur-sm rounded border border-white/30 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 placeholder:text-gray-500"
+                            placeholder="Additional instructions (optional)"
+                            onChange={(e) => sessionStorage.setItem('additionalInstructions', e.target.value)}
+                          />
+                      </div>
                       </div>
                     </div>
                   </div>
-                </div>
-
-                </div>
-
-                <div className="h-248 top-84 cw-768 pointer-events-none absolute overflow-clip -z-10">
-                  <AsciiExplosion className="-top-200" />
                 </div>
               </div>
             </div>
@@ -481,10 +430,11 @@ export default function HomePage() {
 
         {/* Full-width oval carousel section */}
         {showSearchTiles && hasSearched && (
-          <section className={`carousel-section relative w-full overflow-hidden mt-32 mb-32 transition-opacity duration-500 ${
+          <section className={`carousel-section relative w-full overflow-hidden mt-16 mb-16 transition-opacity duration-500 ${
             isFadingOut ? 'opacity-0' : 'opacity-100'
           }`}>
-            <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-white rounded-[50%] transform scale-x-150 -translate-y-24" />
+            {/* Glassmorphism background */}
+            <div className="absolute inset-0 bg-white/30 backdrop-blur-sm"></div>
             
             {isSearching ? (
               // Loading state with animated scrolling skeletons
@@ -498,7 +448,7 @@ export default function HomePage() {
                   {[...Array(10), ...Array(10)].map((_, index) => (
                     <div
                       key={`loading-${index}`}
-                      className="flex-shrink-0 w-[400px] h-[240px] rounded-lg overflow-hidden border-2 border-gray-200/30 bg-white relative"
+                      className="flex-shrink-0 w-[400px] h-[240px] rounded-lg overflow-hidden border-2 border-white/30 bg-white/20 backdrop-blur-sm relative"
                     >
                       <div className="absolute inset-0 skeleton-shimmer">
                         <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-gray-50 to-gray-100 skeleton-gradient" />
@@ -536,7 +486,7 @@ export default function HomePage() {
                   {[...searchResults, ...searchResults].map((result, index) => (
                     <div
                       key={`${result.url}-${index}`}
-                      className="group flex-shrink-0 w-[400px] h-[240px] rounded-lg overflow-hidden border-2 border-gray-200/50 transition-all duration-300 hover:shadow-2xl bg-white relative"
+                      className="group flex-shrink-0 w-[400px] h-[240px] rounded-lg overflow-hidden border-2 border-white/30 transition-all duration-300 hover:shadow-2xl bg-white/20 backdrop-blur-sm hover:bg-white/30 relative"
                       onMouseLeave={() => {
                         if (showInstructionsForIndex === index) {
                           setShowInstructionsForIndex(null);
@@ -549,9 +499,7 @@ export default function HomePage() {
                         {showInstructionsForIndex === index ? (
                           /* Instructions input view - matching main input style exactly */
                           <div className="w-full max-w-[380px]">
-                            <div className="bg-white rounded-20" style={{
-                              boxShadow: "0px 0px 44px 0px rgba(0, 0, 0, 0.02), 0px 88px 56px -20px rgba(0, 0, 0, 0.03), 0px 56px 56px -20px rgba(0, 0, 0, 0.02), 0px 32px 32px -20px rgba(0, 0, 0, 0.03), 0px 16px 24px -12px rgba(0, 0, 0, 0.03), 0px 0px 0px 1px rgba(0, 0, 0, 0.05)"
-                            }}>
+                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
                               {/* Input area matching main search */}
                               <div className="p-16 flex gap-12 items-start w-full relative">
                                 {/* Instructions icon */}
@@ -799,6 +747,41 @@ export default function HomePage() {
 
         .skeleton-gradient {
           animation: shimmer 2s infinite;
+        }
+
+        .glass-container {
+          position: relative;
+        }
+
+        .glass-container::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 1rem;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(255,255,255,0.5), rgba(255,255,255,0.1));
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask-composite: exclude;
+          -webkit-mask-composite: xor;
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          33% { transform: translateY(-10px) rotate(1deg); }
+          66% { transform: translateY(5px) rotate(-1deg); }
+        }
+
+        @keyframes pulseGlow {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.1; transform: scale(1.1); }
+        }
+
+        .glass-container {
+          animation: float 6s ease-in-out infinite;
+        }
+
+        .glass-container .bg-gradient-to-r {
+          animation: pulseGlow 4s ease-in-out infinite;
         }
       `}</style>
     </HeaderProvider>

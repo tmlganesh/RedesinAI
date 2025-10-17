@@ -72,6 +72,7 @@ function AISandboxPage() {
   const [showHomeScreen, setShowHomeScreen] = useState(true);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['app', 'src', 'src/components']));
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [fileContentCache, setFileContentCache] = useState<Record<string, string>>({});
   const [homeScreenFading, setHomeScreenFading] = useState(false);
   const [homeUrlInput, setHomeUrlInput] = useState('');
   const [homeContextInput, setHomeContextInput] = useState('');
@@ -1581,7 +1582,7 @@ Tip: I automatically detect and install npm packages from your code imports (lik
               ref={iframeRef}
               src={sandboxData.url}
               className="w-full h-full border-none"
-              title="Open Lovable Sandbox"
+              title="RedesignAI Sandbox"
               allow="clipboard-write"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
             />
@@ -2215,7 +2216,102 @@ Tip: I automatically detect and install npm packages from your code imports (lik
 
   const handleFileClick = async (filePath: string) => {
     setSelectedFile(filePath);
-    // TODO: Add file content fetching logic here
+    
+    // Check if we already have this file's content cached
+    if (fileContentCache[filePath]) {
+      // Update generationProgress with cached content
+      setGenerationProgress(prev => ({
+        ...prev,
+        files: [
+          ...prev.files.filter(f => f.path !== filePath),
+          {
+            path: filePath,
+            content: fileContentCache[filePath],
+            type: 'file',
+            completed: true,
+            edited: false
+          }
+        ]
+      }));
+      return;
+    }
+    
+    // Fetch file content from sandbox
+    try {
+      const response = await fetch('/api/get-sandbox-files');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.files) {
+          // Find the clicked file
+          const file = data.files.find((f: any) => f.path === filePath || f.path === `./${filePath}`);
+          if (file && file.content) {
+            // Cache the content
+            setFileContentCache(prev => ({
+              ...prev,
+              [filePath]: file.content
+            }));
+            
+            // Update generationProgress with the content
+            setGenerationProgress(prev => ({
+              ...prev,
+              files: [
+                ...prev.files.filter(f => f.path !== filePath),
+                {
+                  path: filePath,
+                  content: file.content,
+                  type: 'file',
+                  completed: true,
+                  edited: false
+                }
+              ]
+            }));
+          } else {
+            // File not found or no content
+            const placeholderContent = '// File not found in sandbox or content is empty';
+            setFileContentCache(prev => ({
+              ...prev,
+              [filePath]: placeholderContent
+            }));
+            
+            setGenerationProgress(prev => ({
+              ...prev,
+              files: [
+                ...prev.files.filter(f => f.path !== filePath),
+                {
+                  path: filePath,
+                  content: placeholderContent,
+                  type: 'file',
+                  completed: true,
+                  edited: false
+                }
+              ]
+            }));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch file content:', error);
+      // Add a placeholder file so at least something is shown
+      const errorContent = '// Failed to load file content from sandbox';
+      setFileContentCache(prev => ({
+        ...prev,
+        [filePath]: errorContent
+      }));
+      
+      setGenerationProgress(prev => ({
+        ...prev,
+        files: [
+          ...prev.files.filter(f => f.path !== filePath),
+          {
+            path: filePath,
+            content: errorContent,
+            type: 'file',
+            completed: true,
+            edited: false
+          }
+        ]
+      }));
+    }
   };
 
   const getFileIcon = (fileName: string) => {

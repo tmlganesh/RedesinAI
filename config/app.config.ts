@@ -51,29 +51,49 @@ export const appConfig = {
   // AI Model Configuration
   ai: {
     // Default AI model
-    defaultModel: 'moonshotai/kimi-k2-instruct-0905',
+    defaultModel: 'groq/llama-3.1-8b-instant',
     
     // Available models
     availableModels: [
-      'openai/gpt-5',
-      'moonshotai/kimi-k2-instruct-0905',
-      'anthropic/claude-sonnet-4-20250514',
-      'google/gemini-2.0-flash-exp'
+      'groq/llama-3.1-8b-instant',
+      'groq/llama-3.2-3b-preview',
+      'groq/mixtral-8x7b-32768',
+      'deepseek/deepseek-r1',
+      'ollama/mishral:7b'
     ],
     
     // Model display names
     modelDisplayNames: {
-      'openai/gpt-5': 'GPT-5',
-      'moonshotai/kimi-k2-instruct-0905': 'Kimi K2 (Groq)',
-      'anthropic/claude-sonnet-4-20250514': 'Sonnet 4',
-      'google/gemini-2.0-flash-exp': 'Gemini 2.0 Flash (Experimental)'
+      'groq/llama-3.1-8b-instant': 'Llama 3.1 8B Instant (Groq)',
+      'groq/llama-3.2-3b-preview': 'Llama 3.2 3B Preview (Groq)',
+      'groq/mixtral-8x7b-32768': 'Mixtral 8x7B (Groq)',
+      'deepseek/deepseek-r1': 'DeepSeek R1',
+      'ollama/mishral:7b': 'Mishral 7B (Local)'
     } as Record<string, string>,
     
     // Model API configuration
     modelApiConfig: {
-      'moonshotai/kimi-k2-instruct-0905': {
+      'groq/llama-3.1-8b-instant': {
         provider: 'groq',
-        model: 'moonshotai/kimi-k2-instruct-0905'
+        model: 'llama-3.1-8b-instant'
+      },
+      'groq/llama-3.2-3b-preview': {
+        provider: 'groq',
+        model: 'llama-3.2-3b-preview'
+      },
+      'groq/mixtral-8x7b-32768': {
+        provider: 'groq',
+        model: 'mixtral-8x7b-32768'
+      },
+      'deepseek/deepseek-r1': {
+        provider: 'openai',
+        model: 'deepseek-r1',
+        baseURL: 'https://api.deepseek.com/v1'
+      },
+      'ollama/mishral:7b': {
+        provider: 'ollama',
+        model: 'mishral:7b',
+        baseURL: 'http://localhost:11434/v1'
       }
     },
     

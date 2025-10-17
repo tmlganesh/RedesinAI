@@ -59,8 +59,8 @@
   --illustrations-default: #dbdbdb;
   
   /* Background colors */
-  --background-lighter: #fbfbfb;
-  --background-base: #f9f9f9;
+  --background-lighter: #ffffff;
+  --background-base: #ffffff;
   
   /* Foreground colors */
   --foreground: #262626;
@@ -128,8 +128,8 @@
     --illustrations-default: color(display-p3 0.858824 0.858824 0.858824 / 1.000000);
     
     /* Background colors */
-    --background-lighter: color(display-p3 0.984314 0.984314 0.984314 / 1.000000);
-    --background-base: color(display-p3 0.976471 0.976471 0.976471 / 1.000000);
+    --background-lighter: color(display-p3 1.000000 1.000000 1.000000 / 1.000000);
+    --background-base: color(display-p3 1.000000 1.000000 1.000000 / 1.000000);
   }
 }
 

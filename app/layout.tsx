@@ -26,7 +26,7 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Open Lovable v2",
+  title: "Redesign",
   description: "Re-imagine any website in seconds with AI-powered website builder.",
 };
 
