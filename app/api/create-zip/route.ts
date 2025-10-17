@@ -100,7 +100,7 @@ with open(zip_path, 'rb') as f:
         return NextResponse.json({
           success: true,
           dataUrl,
-          fileName: 'e2b-sandbox-project.zip',
+          fileName: 'e2b-sandbox-project-hackathon.zip',
           message: 'Zip file created successfully'
         });
 

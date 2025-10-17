@@ -50,29 +50,64 @@ export const appConfig = {
   
   // AI Model Configuration
   ai: {
-    // Default AI model
-    defaultModel: 'groq/llama-3.1-8b-instant',
+    // Default AI model (Primary: GPT OSS 20B)
+    defaultModel: 'openai/gpt-oss-20b',
     
-    // Available models
+    // Available models (in priority order: GPT OSS 20B → DeepSeek R1 → Mistral 7B)
     availableModels: [
+      'openai/gpt-oss-20b',
+      'deepseek/deepseek-r1', 
+      'openai/mistral-7b',
+      'ollama/mistral:7b',
       'groq/llama-3.1-8b-instant',
       'groq/llama-3.2-3b-preview',
-      'groq/mixtral-8x7b-32768',
-      'deepseek/deepseek-r1',
-      'ollama/mishral:7b'
+      'groq/mixtral-8x7b-32768'
+    ],
+    
+    // Fallback chain for automatic model switching
+    fallbackChain: [
+      'openai/gpt-oss-20b',    // Primary
+      'deepseek/deepseek-r1',  // First fallback
+      'openai/mistral-7b',     // Second fallback  
+      'ollama/mistral:7b'      // Final fallback (local)
     ],
     
     // Model display names
     modelDisplayNames: {
+      'openai/gpt-oss-20b': 'GPT OSS 20B (Primary) ',
+      'deepseek/deepseek-r1': 'DeepSeek R1 (Fallback 1) ',
+      'openai/mistral-7b': 'Mistral 7B (Fallback 2) ',
+      'ollama/mistral:7b': 'Mistral 7B Local (Fallback 3) ',
       'groq/llama-3.1-8b-instant': 'Llama 3.1 8B Instant (Groq)',
-      'groq/llama-3.2-3b-preview': 'Llama 3.2 3B Preview (Groq)',
-      'groq/mixtral-8x7b-32768': 'Mixtral 8x7B (Groq)',
-      'deepseek/deepseek-r1': 'DeepSeek R1',
-      'ollama/mishral:7b': 'Mishral 7B (Local)'
+      'groq/llama-3.2-3b-preview': 'Llama 3.2 3B Preview (Groq)', 
+      'groq/mixtral-8x7b-32768': 'Mixtral 8x7B (Groq)'
     } as Record<string, string>,
     
     // Model API configuration
     modelApiConfig: {
+      'openai/gpt-oss-20b': {
+        provider: 'openai',
+        model: 'gpt-oss-20b',
+        baseURL: 'https://openrouter.ai/api/v1',
+        apiKeyEnv: 'OPENAI_GPT_OSS_20B'
+      },
+      'deepseek/deepseek-r1': {
+        provider: 'openai',
+        model: 'deepseek-r1',
+        baseURL: 'https://openrouter.ai/api/v1',
+        apiKeyEnv: 'DEEPSEEK_R1'
+      },
+      'openai/mistral-7b': {
+        provider: 'openai',
+        model: 'mistral-7b',
+        baseURL: 'https://openrouter.ai/api/v1',
+        apiKeyEnv: 'MISTRAL_7B'
+      },
+      'ollama/mistral:7b': {
+        provider: 'ollama',
+        model: 'mistral:7b', 
+        baseURL: 'http://localhost:11434/v1'
+      },
       'groq/llama-3.1-8b-instant': {
         provider: 'groq',
         model: 'llama-3.1-8b-instant'
@@ -84,27 +119,56 @@ export const appConfig = {
       'groq/mixtral-8x7b-32768': {
         provider: 'groq',
         model: 'mixtral-8x7b-32768'
-      },
-      'deepseek/deepseek-r1': {
-        provider: 'openai',
-        model: 'deepseek-r1',
-        baseURL: 'https://api.deepseek.com/v1'
-      },
-      'ollama/mishral:7b': {
-        provider: 'ollama',
-        model: 'mishral:7b',
-        baseURL: 'http://localhost:11434/v1'
       }
     },
     
     // Temperature settings for non-reasoning models
     defaultTemperature: 0.7,
     
-    // Max tokens for code generation
-    maxTokens: 8000,
+    // Max tokens for code generation (reduced for Groq limits)
+    maxTokens: 4000,
     
     // Max tokens for truncation recovery
-    truncationRecoveryMaxTokens: 4000,
+    truncationRecoveryMaxTokens: 2000,
+    
+    // Model-specific optimization settings
+    modelOptimizations: {
+      'openai/gpt-oss-20b': {
+        maxTokens: 8192,
+        temperature: 0.7,
+        preferredContentTier: 1, // Can handle larger content
+        retryStrategy: 'progressive', // Try reducing content before fallback
+        timeoutMs: 45000
+      },
+      'deepseek/deepseek-r1': {
+        maxTokens: 8192,
+        temperature: 0.1, // Lower for reasoning model
+        preferredContentTier: 1,
+        retryStrategy: 'progressive',
+        timeoutMs: 60000 // Reasoning takes time
+      },
+      'openai/mistral-7b': {
+        maxTokens: 6144,
+        temperature: 0.7,
+        preferredContentTier: 2, // Smaller context window
+        retryStrategy: 'fallback',
+        timeoutMs: 30000
+      },
+      'ollama/mistral:7b': {
+        maxTokens: 4096,
+        temperature: 0.7,
+        preferredContentTier: 3, // Local processing, smaller context
+        retryStrategy: 'content-reduction',
+        timeoutMs: 120000 // Local processing can be slow
+      },
+      'groq/llama-3.1-8b-instant': {
+        maxTokens: 4000,
+        temperature: 0.7,
+        preferredContentTier: 2,
+        retryStrategy: 'fallback',
+        timeoutMs: 15000 // Fast service
+      }
+    },
   },
   
   // Code Application Configuration

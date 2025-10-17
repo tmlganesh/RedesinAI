@@ -75,9 +75,10 @@ const themeConfig: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "var(--font-inter)", ...defaultTheme.fontFamily.sans],
+        sans: ["Proxima Nova", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "var(--font-geist-sans)", "var(--font-inter)", ...defaultTheme.fontFamily.sans],
         mono: ["var(--font-geist-mono)", ...defaultTheme.fontFamily.mono],
-        ascii: ["var(--font-roboto-mono)", ...defaultTheme.fontFamily.mono]
+        ascii: ["var(--font-roboto-mono)", ...defaultTheme.fontFamily.mono],
+        proxima: ["Proxima Nova", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"]
       },
       fontSize: {
         "title-h1": [

@@ -44,7 +44,7 @@ export default function HeaderBrandKit() {
           }
         }}
       >
-        <span className="text-xl font-bold text-gray-900">Redesign</span>
+        <span className="text-xl font-bold text-gray-900" style={{ fontFamily: 'Proxima Nova, sans-serif' }}>RedesignAI</span>
       </Link>
 
       <AnimatePresence initial={false} mode="popLayout">
@@ -204,7 +204,7 @@ const Button = (attributes: React.ButtonHTMLAttributes<HTMLButtonElement>) => {
     <button
       {...attributes}
       className={cn(
-        "flex gap-8 w-full items-center text-label-small group text-accent-black p-6",
+        "flex gap-8 w-full items-center text-label-small group text-white p-6",
         attributes.className,
       )}
     >

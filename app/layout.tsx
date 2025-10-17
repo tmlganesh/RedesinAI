@@ -8,6 +8,8 @@ const inter = Inter({
   variable: "--font-inter"
 });
 
+
+
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -37,7 +39,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} ${robotoMono.variable} font-sans`}>
+      <body className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} ${robotoMono.variable}`} style={{fontFamily: "'Proxima Nova', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"}}>
         {children}
       </body>
     </html>

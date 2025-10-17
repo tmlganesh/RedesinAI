@@ -8,6 +8,192 @@ import { executeSearchPlan, formatSearchResultsForAI, selectTargetFile } from '@
 import { FileManifest } from '@/types/file-manifest';
 import type { ConversationState, ConversationMessage, ConversationEdit } from '@/types/conversation';
 import { appConfig } from '@/config/app.config';
+import { streamFromOllama, parseSSEStream } from '@/lib/ollama-client';
+
+// Enhanced error analysis and content optimization
+function analyzeError(error: any): {
+  type: 'content-too-large' | 'rate-limit' | 'network' | 'auth' | 'service-unavailable' | 'unknown';
+  shouldReduceContent: boolean;
+  shouldFallback: boolean;
+  recommendedAction: string;
+} {
+  const message = error?.message?.toLowerCase() || '';
+  const status = error?.status || error?.statusCode || 0;
+  
+  // Content size issues
+  if (message.includes('token') && (message.includes('limit') || message.includes('exceeded') || message.includes('too long'))) {
+    return {
+      type: 'content-too-large',
+      shouldReduceContent: true,
+      shouldFallback: false,
+      recommendedAction: 'Reduce content size and retry with same model'
+    };
+  }
+  
+  // Rate limiting
+  if (message.includes('rate limit') || status === 429) {
+    return {
+      type: 'rate-limit',
+      shouldReduceContent: false,
+      shouldFallback: true,
+      recommendedAction: 'Switch to different model immediately'
+    };
+  }
+  
+  // Network/timeout issues
+  if (message.includes('timeout') || message.includes('network') || message.includes('connection') || status >= 500) {
+    return {
+      type: 'network',
+      shouldReduceContent: false,
+      shouldFallback: status >= 500, // Server errors should fallback, timeouts should retry
+      recommendedAction: status >= 500 ? 'Switch to different model' : 'Retry with backoff'
+    };
+  }
+  
+  // Authentication issues
+  if (message.includes('unauthorized') || message.includes('api key') || status === 401 || status === 403) {
+    return {
+      type: 'auth',
+      shouldReduceContent: false,
+      shouldFallback: true,
+      recommendedAction: 'Switch to different model (auth issue)'
+    };
+  }
+  
+  // Service unavailable
+  if (message.includes('service unavailable') || message.includes('not found') || status === 404 || status === 503) {
+    return {
+      type: 'service-unavailable',
+      shouldReduceContent: false,
+      shouldFallback: true,
+      recommendedAction: 'Switch to different model (service down)'
+    };
+  }
+  
+  return {
+    type: 'unknown',
+    shouldReduceContent: true, // Try content reduction first
+    shouldFallback: false,
+    recommendedAction: 'Try content reduction, then fallback if needed'
+  };
+}
+
+// Content quality scoring to prevent poor content from causing AI failures
+function scoreContentQuality(content: string): {
+  score: number; // 0-100, higher is better
+  issues: string[];
+  recommendation: 'excellent' | 'good' | 'fair' | 'poor' | 'reject';
+} {
+  const issues: string[] = [];
+  let score = 100;
+  
+  // Check content length
+  if (content.length < 100) {
+    issues.push('Content too short');
+    score -= 30;
+  } else if (content.length < 500) {
+    issues.push('Content quite short');
+    score -= 15;
+  }
+  
+  // Check for meaningful structure
+  const hasHeaders = /^#+\s+/m.test(content);
+  const hasTitle = /Title:/i.test(content);
+  const hasDescription = /Description:/i.test(content);
+  
+  if (!hasHeaders && !hasTitle) {
+    issues.push('No clear structure or headers');
+    score -= 20;
+  }
+  
+  // Check for excessive noise
+  const lines = content.split('\n');
+  const emptyLines = lines.filter(l => !l.trim()).length;
+  const emptyRatio = emptyLines / lines.length;
+  
+  if (emptyRatio > 0.5) {
+    issues.push('Too many empty lines');
+    score -= 15;
+  }
+  
+  // Check for error messages or failed scrapes
+  const errorIndicators = [
+    'failed to scrape', 'error occurred', 'access denied', 
+    'not available', '404', '500', 'forbidden'
+  ];
+  
+  const hasErrors = errorIndicators.some(indicator => 
+    content.toLowerCase().includes(indicator)
+  );
+  
+  if (hasErrors) {
+    issues.push('Contains error messages');
+    score -= 25;
+  }
+  
+  // Check for repetitive content
+  const words = content.toLowerCase().split(/\s+/);
+  const uniqueWords = new Set(words);
+  const uniqueRatio = uniqueWords.size / words.length;
+  
+  if (uniqueRatio < 0.3) {
+    issues.push('Highly repetitive content');
+    score -= 20;
+  }
+  
+  // Check for useful content indicators
+  const qualityIndicators = [
+    'component', 'react', 'jsx', 'css', 'html', 'app', 'website',
+    'design', 'ui', 'interface', 'button', 'form', 'navigation'
+  ];
+  
+  const hasQualityIndicators = qualityIndicators.some(indicator =>
+    content.toLowerCase().includes(indicator)
+  );
+  
+  if (hasQualityIndicators) {
+    score += 10;
+  }
+  
+  // Determine recommendation
+  let recommendation: 'excellent' | 'good' | 'fair' | 'poor' | 'reject';
+  if (score >= 85) recommendation = 'excellent';
+  else if (score >= 70) recommendation = 'good';
+  else if (score >= 50) recommendation = 'fair';
+  else if (score >= 30) recommendation = 'poor';
+  else recommendation = 'reject';
+  
+  return { score: Math.max(0, score), issues, recommendation };
+}
+
+// Reduce content for retry attempts
+function reduceContentForRetry(originalPrompt: string, tier: number): string {
+  if (tier <= 1) return originalPrompt;
+  
+  const lines = originalPrompt.split('\n');
+  const result: string[] = [];
+  
+  for (const line of lines) {
+    if (tier === 2) {
+      // Tier 2: Keep headers and key content
+      if (line.match(/^#+\s+/) || line.includes('Title:') || line.includes('Description:') || line.length < 100) {
+        result.push(line);
+      }
+    } else if (tier === 3) {
+      // Tier 3: Headers and titles only
+      if (line.match(/^#+\s+/) || line.includes('Title:') || line.includes('Description:')) {
+        result.push(line);
+      }
+    } else {
+      // Tier 4: Minimal content
+      if (line.includes('Title:') || line.includes('Description:')) {
+        result.push(line);
+      }
+    }
+  }
+  
+  return result.join('\n') + '\n\n[Content reduced for AI processing compatibility]';
+}
 
 // Force dynamic route to enable streaming
 export const dynamic = 'force-dynamic';
@@ -21,6 +207,9 @@ console.log('[generate-ai-code-stream] AI provider configuration:', {
   hasGroqKey: !!process.env.GROQ_API_KEY,
   hasDeepSeekKey: !!process.env.DEEPSEEK_API_KEY,
   hasAIGatewayKey: !!process.env.AI_GATEWAY_API_KEY,
+  hasGptOssKey: !!process.env.OPENAI_GPT_OSS_20B,
+  hasDeepseekR1Key: !!process.env.DEEPSEEK_R1,
+  hasMistral7bKey: !!process.env.MISTRAL_7B,
   ollamaBaseURL: process.env.OLLAMA_BASE_URL || 'http://localhost:11434/v1'
 });
 
@@ -32,6 +221,22 @@ const groq = createGroq({
 const deepseek = createOpenAI({
   apiKey: process.env.DEEPSEEK_API_KEY,
   baseURL: 'https://api.deepseek.com/v1',
+});
+
+// OpenRouter API clients for the fallback chain
+const gptOss20b = createOpenAI({
+  apiKey: process.env.OPENAI_GPT_OSS_20B || 'missing-gpt-oss-key',
+  baseURL: 'https://openrouter.ai/api/v1',
+});
+
+const deepseekR1 = createOpenAI({
+  apiKey: process.env.DEEPSEEK_R1 || 'missing-deepseek-r1-key',
+  baseURL: 'https://openrouter.ai/api/v1',
+});
+
+const mistral7b = createOpenAI({
+  apiKey: process.env.MISTRAL_7B || 'missing-mistral-7b-key',
+  baseURL: 'https://openrouter.ai/api/v1',
 });
 
 // Ollama local LLM support
@@ -587,10 +792,11 @@ ${conversationContext}
    - Don't improve things not mentioned
 2. **CHECK App.jsx FIRST** - ALWAYS see what components exist before creating new ones
 3. **NAVIGATION LIVES IN Header.jsx** - Don't create Nav.jsx if Header exists with nav
-4. **USE STANDARD TAILWIND CLASSES ONLY**:
-   - ✅ CORRECT: bg-white, text-black, bg-blue-500, bg-gray-100, text-gray-900
+4. **USE STANDARD TAILWIND CLASSES WITH PROPER CONTRAST**:
+   - ✅ CORRECT: bg-white, text-white, bg-blue-500, bg-gray-900, text-gray-100
    - ❌ WRONG: bg-background, text-foreground, bg-primary, bg-muted, text-secondary
    - Use ONLY classes from the official Tailwind CSS documentation
+   - **IMPORTANT**: Always ensure good contrast - use light text on dark backgrounds and dark text on light backgrounds
 5. **FILE COUNT LIMITS**:
    - Simple style/text change = 1 file ONLY
    - New component = 2 files MAX (component + parent)
@@ -607,6 +813,20 @@ COMPONENT RELATIONSHIPS (CHECK THESE FIRST):
 - Footer often contains nav links already
 - Menu/Hamburger is part of Header, not separate
 
+🎨 STYLING AND DESIGN REQUIREMENTS:
+1. **MODERN AESTHETICS**: Always create visually appealing, modern designs
+2. **PROPER CONTRAST**: Use white text (text-white) on dark backgrounds, dark text on light backgrounds
+3. **DEFAULT STYLING APPROACH**:
+   - Primary backgrounds: bg-gray-900, bg-slate-800, bg-blue-900 (dark themes)
+   - Primary text: text-white, text-gray-100 (for good contrast on dark backgrounds)
+   - Secondary text: text-gray-300, text-gray-200
+   - Accent colors: text-blue-400, text-green-400, text-purple-400
+4. **RECOMMENDED COLOR SCHEMES**:
+   - Dark theme: bg-gray-900 + text-white
+   - Blue theme: bg-blue-900 + text-white  
+   - Gradient backgrounds: bg-gradient-to-br from-blue-900 to-purple-900 + text-white
+5. **AVOID LOW CONTRAST**: Never use gray text on gray backgrounds or dark text on dark backgrounds
+
 PACKAGE USAGE RULES:
 - DO NOT use react-router-dom unless user explicitly asks for routing
 - For simple nav links in a single-page app, use scroll-to-section or href="#"
@@ -615,11 +835,18 @@ PACKAGE USAGE RULES:
 
 WEBSITE CLONING REQUIREMENTS:
 When recreating/cloning a website, you MUST include:
-1. **Header with Navigation** - Usually Header.jsx containing nav
-2. **Hero Section** - The main landing area (Hero.jsx)
-3. **Main Content Sections** - Features, Services, About, etc.
-4. **Footer** - Contact info, links, copyright (Footer.jsx)
+1. **Header with Navigation** - Usually Header.jsx containing nav (use dark bg + white text)
+2. **Hero Section** - The main landing area (Hero.jsx) with attractive gradients
+3. **Main Content Sections** - Features, Services, About, etc. (ensure proper contrast)
+4. **Footer** - Contact info, links, copyright (Footer.jsx) (typically dark bg + white text)
 5. **App.jsx** - Main app component that imports and uses all components
+
+🎨 CLONING STYLE REQUIREMENTS:
+- **ALWAYS improve the visual appeal** - make it more modern and attractive than the original
+- **USE DARK THEMES BY DEFAULT**: Most sections should use dark backgrounds (bg-gray-900, bg-slate-800) with white text (text-white)
+- **GRADIENT BACKGROUNDS**: Use attractive gradients like bg-gradient-to-br from-blue-900 to-purple-900
+- **PROPER SPACING**: Use generous padding (p-8, p-12) and margins (my-16, my-20) for modern feel
+- **PROFESSIONAL TYPOGRAPHY**: Use proper font weights (font-bold for headers, font-medium for subheadings)
 
 ${isEdit ? `CRITICAL: THIS IS AN EDIT TO AN EXISTING APPLICATION
 
@@ -1206,6 +1433,37 @@ MORPH FAST APPLY MODE (EDIT-ONLY):
           }
         }
         
+        // Content quality validation and optimization
+        const contentQuality = scoreContentQuality(fullPrompt);
+        console.log(`[generate-ai-code-stream] Content quality: ${contentQuality.score}/100 (${contentQuality.recommendation})`);
+        
+        if (contentQuality.issues.length > 0) {
+          console.log(`[generate-ai-code-stream] Content issues:`, contentQuality.issues);
+        }
+        
+        // Reject very poor quality content early
+        if (contentQuality.recommendation === 'reject') {
+          await sendProgress({ 
+            type: 'error', 
+            message: `Content quality too low for AI processing. Issues: ${contentQuality.issues.join(', ')}` 
+          });
+          
+          await sendProgress({ 
+            type: 'info', 
+            message: 'Try with a different website or check if the URL is accessible.' 
+          });
+          
+          throw new Error(`Content quality rejected: ${contentQuality.issues.join(', ')}`);
+        }
+        
+        // Warn about poor quality but continue
+        if (contentQuality.recommendation === 'poor') {
+          await sendProgress({ 
+            type: 'warning', 
+            message: `Content quality is low. May need to use fallback models. Issues: ${contentQuality.issues.join(', ')}` 
+          });
+        }
+        
         await sendProgress({ type: 'status', message: 'Planning application structure...' });
         
         console.log('\n[generate-ai-code-stream] Starting streaming response...\n');
@@ -1213,30 +1471,68 @@ MORPH FAST APPLY MODE (EDIT-ONLY):
         // Track packages that need to be installed
         const packagesToInstall: string[] = [];
         
+        // Fallback chain: GPT OSS 20B → DeepSeek R1 → Mistral 7B → Ollama
+        const fallbackChain = appConfig.ai.fallbackChain;
+        let modelToTry = model;
+        
+        // If no specific model provided, start with primary
+        if (!modelToTry || modelToTry === 'auto') {
+          modelToTry = fallbackChain[0];
+        }
+        
         // Determine which provider to use based on model
-        const isGroq = model.startsWith('groq/');
-        const isDeepSeek = model.startsWith('deepseek/');
-        const isOllama = model.startsWith('ollama/');
+        const isGroq = modelToTry.startsWith('groq/');
+        const isDeepSeek = modelToTry.startsWith('deepseek/');
+        const isOllama = modelToTry.startsWith('ollama/');
+        const isGptOss = modelToTry === 'openai/gpt-oss-20b';
+        const isDeepSeekR1 = modelToTry === 'deepseek/deepseek-r1';
+        const isMistral7b = modelToTry === 'openai/mistral-7b';
         
         let modelProvider;
         let actualModel: string;
+        let providerName: string;
         
-        if (isGroq) {
+        if (isGptOss) {
+          if (!process.env.OPENAI_GPT_OSS_20B) {
+            throw new Error('GPT OSS 20B API key missing. Please set OPENAI_GPT_OSS_20B in your .env file.');
+          }
+          modelProvider = gptOss20b;
+          actualModel = 'gpt-oss-20b';
+          providerName = 'GPT OSS 20B (Primary)';
+        } else if (isDeepSeekR1) {
+          if (!process.env.DEEPSEEK_R1) {
+            throw new Error('DeepSeek R1 API key missing. Please set DEEPSEEK_R1 in your .env file.');
+          }
+          modelProvider = deepseekR1;
+          actualModel = 'deepseek-r1';
+          providerName = 'DeepSeek R1 (Fallback 1)';
+        } else if (isMistral7b) {
+          if (!process.env.MISTRAL_7B) {
+            throw new Error('Mistral 7B API key missing. Please set MISTRAL_7B in your .env file.');
+          }
+          modelProvider = mistral7b;
+          actualModel = 'mistral-7b';
+          providerName = 'Mistral 7B (Fallback 2)';
+        } else if (isGroq) {
           modelProvider = groq;
-          actualModel = model.replace('groq/', '');
+          actualModel = modelToTry.replace('groq/', '');
+          providerName = 'Groq';
         } else if (isDeepSeek) {
           modelProvider = deepseek;
-          actualModel = model.replace('deepseek/', '');
+          actualModel = modelToTry.replace('deepseek/', '');
+          providerName = 'DeepSeek';
         } else if (isOllama) {
           modelProvider = ollama;
-          actualModel = model.replace('ollama/', '');
+          actualModel = modelToTry.replace('ollama/', '');
+          providerName = 'Ollama (Local)';
         } else {
-          // Default to Groq for backward compatibility
-          modelProvider = groq;
-          actualModel = model;
+          // Default to primary model
+          modelProvider = gptOss20b;
+          actualModel = 'gpt-oss-20b';
+          providerName = 'GPT OSS 20B (Default)';
         }
 
-        console.log(`[generate-ai-code-stream] Using provider: ${isGroq ? 'Groq' : isDeepSeek ? 'DeepSeek' : isOllama ? 'Ollama (Local)' : 'Groq (Default)'}, model: ${actualModel}`);
+        console.log(`[generate-ai-code-stream] Using provider: ${providerName}, model: ${actualModel}`);
         console.log(`[generate-ai-code-stream] AI Gateway enabled: ${isUsingAIGateway}`);
         console.log(`[generate-ai-code-stream] Model string: ${model}`);
 
@@ -1322,46 +1618,134 @@ It's better to have 3 complete files than 10 incomplete files.`
         
         let result;
         let retryCount = 0;
+        let contentTier = 1; // Start with full content
         const maxRetries = 2;
+        const maxContentTiers = 4;
+        let fallbackIndex = fallbackChain.indexOf(modelToTry);
+        if (fallbackIndex === -1) fallbackIndex = 0; // Start from primary if not in chain
         
-        while (retryCount <= maxRetries) {
+        // Store original prompt for content reduction
+        const originalUserContent = streamOptions.messages[1]?.content || '';
+        
+        while (retryCount <= maxRetries || contentTier <= maxContentTiers) {
           try {
-            result = await streamText(streamOptions);
+            if (isOllama) {
+              // Use direct Ollama client instead of AI SDK
+              const stream = await streamFromOllama(actualModel, streamOptions.messages, streamOptions.maxTokens);
+              result = {
+                textStream: parseSSEStream(stream),
+                usage: undefined,
+                finishReason: 'stop'
+              };
+            } else {
+              result = await streamText(streamOptions);
+            }
             break; // Success, exit retry loop
           } catch (streamError: any) {
-            console.error(`[generate-ai-code-stream] Error calling streamText (attempt ${retryCount + 1}/${maxRetries + 1}):`, streamError);
+            console.error(`[generate-ai-code-stream] Error (tier ${contentTier}, attempt ${retryCount + 1}):`, streamError);
             
-            // Check if this is a service unavailable error
-            const isServiceError = streamError.message?.includes('Service unavailable');
-            const isRetryableError = streamError.message?.includes('Service unavailable') || 
-                                    streamError.message?.includes('rate limit') ||
-                                    streamError.message?.includes('timeout');
+            // Analyze the error to determine best recovery strategy
+            const errorAnalysis = analyzeError(streamError);
+            console.log(`[generate-ai-code-stream] Error analysis:`, errorAnalysis);
             
-            if (retryCount < maxRetries && isRetryableError) {
-              retryCount++;
-              console.log(`[generate-ai-code-stream] Retrying in ${retryCount * 2} seconds...`);
+            // Strategy 1: Try content reduction with same model
+            if (errorAnalysis.shouldReduceContent && contentTier < maxContentTiers) {
+              contentTier++;
+              retryCount = 0; // Reset retries for new content tier
               
-              // Send progress update about retry
+              console.log(`[generate-ai-code-stream] Reducing content to tier ${contentTier}`);
+              
+              // Update the user message with reduced content
+              const reducedContent = reduceContentForRetry(originalUserContent, contentTier);
+              streamOptions.messages[1].content = reducedContent;
+              
               await sendProgress({ 
                 type: 'info', 
-                message: `Service temporarily unavailable, retrying (attempt ${retryCount + 1}/${maxRetries + 1})...` 
+                message: `Content too large for ${providerName}, reducing content size (tier ${contentTier})...` 
+              });
+              
+              continue; // Try again with reduced content
+            }
+            
+            // Strategy 2: Regular retry for network/temporary issues
+            const isRetryableError = errorAnalysis.type === 'network' || 
+                                    errorAnalysis.type === 'unknown' ||
+                                    streamError.message?.includes('timeout');
+            
+            if (retryCount < maxRetries && isRetryableError && !errorAnalysis.shouldFallback) {
+              retryCount++;
+              console.log(`[generate-ai-code-stream] Network retry ${retryCount}/${maxRetries} in ${retryCount * 2}s...`);
+              
+              await sendProgress({ 
+                type: 'info', 
+                message: `${errorAnalysis.recommendedAction} (attempt ${retryCount + 1}/${maxRetries + 1})...` 
               });
               
               // Wait before retry with exponential backoff
               await new Promise(resolve => setTimeout(resolve, retryCount * 2000));
               
-              // If current service fails, try switching to a fallback model
-              if (isServiceError && retryCount === maxRetries) {
-                console.log('[generate-ai-code-stream] Current service unavailable, falling back to Groq');
-                streamOptions.model = groq('llama-3.1-70b-versatile');
-                actualModel = 'llama-3.1-70b-versatile';
+            } else if (fallbackIndex < fallbackChain.length - 1) {
+              // Strategy 3: Try next model in fallback chain
+              fallbackIndex++;
+              const nextModel = fallbackChain[fallbackIndex];
+              
+              console.log(`[generate-ai-code-stream] ${providerName} exhausted, falling back to: ${nextModel}`);
+              
+              // Reset content tier and retry count for new model
+              contentTier = 1;
+              retryCount = 0;
+              
+              // Restore original content for new model
+              streamOptions.messages[1].content = originalUserContent;
+              
+              // Update model and provider for fallback
+              modelToTry = nextModel;
+              const isNextGroq = nextModel.startsWith('groq/');
+              const isNextDeepSeek = nextModel.startsWith('deepseek/');
+              const isNextOllama = nextModel.startsWith('ollama/');
+              const isNextGptOss = nextModel === 'openai/gpt-oss-20b';
+              const isNextDeepSeekR1 = nextModel === 'deepseek/deepseek-r1';
+              const isNextMistral7b = nextModel === 'openai/mistral-7b';
+              
+              if (isNextGptOss) {
+                modelProvider = gptOss20b;
+                actualModel = 'gpt-oss-20b';
+                providerName = 'GPT OSS 20B';
+              } else if (isNextDeepSeekR1) {
+                modelProvider = deepseekR1;
+                actualModel = 'deepseek-r1';
+                providerName = 'DeepSeek R1';
+              } else if (isNextMistral7b) {
+                modelProvider = mistral7b;
+                actualModel = 'mistral-7b';
+                providerName = 'Mistral 7B';
+              } else if (isNextOllama) {
+                modelProvider = ollama;
+                actualModel = nextModel.replace('ollama/', '');
+                providerName = 'Ollama (Local)';
+              } else if (isNextGroq) {
+                modelProvider = groq;
+                actualModel = nextModel.replace('groq/', '');
+                providerName = 'Groq';
+              } else if (isNextDeepSeek) {
+                modelProvider = deepseek;
+                actualModel = nextModel.replace('deepseek/', '');
+                providerName = 'DeepSeek'; 
               }
+              
+              streamOptions.model = modelProvider(actualModel);
+              
+              await sendProgress({ 
+                type: 'info', 
+                message: `Switched to fallback model: ${providerName} (${actualModel})` 
+              });
+              
+              retryCount = 0; // Reset retry count for new model
             } else {
-              // Final error, send to user
-              const providerName = isGroq ? 'Groq' : isDeepSeek ? 'DeepSeek' : isOllama ? 'Ollama' : 'AI Provider';
+              // Final error after all fallbacks exhausted
               await sendProgress({ 
                 type: 'error', 
-                message: `Failed to initialize ${providerName} streaming: ${streamError.message}` 
+                message: `All models in fallback chain failed. Last error from ${providerName}: ${streamError.message}` 
               });
               
               // If this is an Ollama error, provide helpful info
@@ -1371,6 +1755,11 @@ It's better to have 3 complete files than 10 incomplete files.`
                   message: 'Tip: Make sure Ollama is running locally and the mistral:7b model is installed.' 
                 });
               }
+              
+              await sendProgress({ 
+                type: 'info', 
+                message: 'Fallback chain attempted: GPT OSS 20B → DeepSeek R1 → Mistral 7B → Ollama Local' 
+              });
               
               throw streamError;
             }

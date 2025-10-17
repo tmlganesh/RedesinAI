@@ -188,31 +188,31 @@ export default function HomePage() {
 
   return (
     <HeaderProvider>
-      <div className="min-h-screen bg-white">
-        {/* Clean header - no complex dropdowns */}
+      <div className="min-h-screen" style={{ backgroundColor: '#F9F3E8' }}>
+        {/* Glass Navigation Bar */}
 
-        <div className="sticky top-0 left-0 w-full z-[101] bg-white border-b border-gray-100">
-          <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="sticky top-0 left-0 w-full z-[101] glass-nav backdrop-blur-xl bg-white/80 border-b border-white/50 shadow-xl shadow-black/10">
+          <div className="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
             <HeaderBrandKit />
           </div>
         </div>
 
-        {/* Hero Section - Glassmorphism Design */}
-        <section className="min-h-screen relative overflow-hidden" id="home-hero">
-          {/* Animated Background */}
+        {/* Hero Section - Clean Modern Design */}
+        <section className="hero-section min-h-screen relative overflow-hidden" id="home-hero">
+          {/* Subtle Background */}
           <div className="absolute inset-0">
-            {/* Base gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50"></div>
+            {/* Warm gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 via-amber-50/30 to-yellow-50/40"></div>
             
-            {/* Floating glass orbs */}
-            <div className="absolute top-20 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-gradient-to-r from-pink-400/20 to-orange-400/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-            <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-r from-purple-400/20 to-blue-400/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+            {/* Elegant floating orbs with warm tones */}
+            <div className="absolute top-20 left-1/4 w-96 h-96 bg-gradient-to-r from-amber-200/30 to-orange-200/25 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-gradient-to-r from-yellow-200/25 to-amber-200/30 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+            <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-r from-orange-200/20 to-yellow-200/25 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
             
-            {/* Subtle grid pattern */}
+            {/* Subtle warm grid pattern */}
             <div className="absolute inset-0 opacity-[0.02]" style={{
-              backgroundImage: `radial-gradient(circle at 1px 1px, rgba(0,0,0,0.15) 1px, transparent 0)`,
-              backgroundSize: '20px 20px'
+              backgroundImage: `radial-gradient(circle at 1px 1px, rgba(139,69,19,0.1) 1px, transparent 0)`,
+              backgroundSize: '40px 40px'
             }}></div>
           </div>
 
@@ -221,16 +221,16 @@ export default function HomePage() {
             <div className="text-center">
               <div className="mb-8">
                 <HomeHeroTitle />
-                <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+                <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto" style={{ fontFamily: 'Proxima Nova, sans-serif' }}>
                   Re-imagine any website, in seconds.
                 </p>
               </div>
 
               {/* Glassmorphism Search Container */}
               <div className="w-full max-w-2xl mx-auto">
-                <div className="glass-container relative backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-2xl shadow-black/10">
+                <div className="glass-container relative backdrop-blur-xl bg-white/90 border border-gray-200 rounded-2xl shadow-xl shadow-gray-900/10">
 
-                  <div className="p-6 flex gap-3 items-center w-full relative bg-white/40 backdrop-blur-sm rounded-xl border border-white/20">
+                  <div className="p-6 flex gap-3 items-center w-full relative bg-white rounded-xl border border-gray-100">
                   {/* Show different UI when search results are displayed */}
                   {hasSearched && searchResults.length > 0 && !isFadingOut ? (
                     <>
@@ -402,7 +402,7 @@ export default function HomePage() {
                           <select
                             value={selectedModel}
                             onChange={(e) => setSelectedModel(e.target.value)}
-                            className="px-3 py-2.5 text-[10px] font-medium text-gray-700 bg-white/60 backdrop-blur-sm rounded border border-white/30 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                            className="px-3 py-2.5 text-[10px] font-medium text-gray-700 bg-white rounded border border-gray-200 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                           >
                           {models.map((model) => (
                             <option key={model.id} value={model.id}>
@@ -629,7 +629,7 @@ export default function HomePage() {
                                   setShowInstructionsForIndex(index);
                                   setAdditionalInstructions('');
                                 }}
-                                className="bg-gray-100 hover:bg-gray-200 flex items-center justify-center button relative text-label-medium rounded-10 p-8 gap-2 text-gray-700 active:scale-[0.995]"
+                                className="bg-white/20 hover:bg-white/30 flex items-center justify-center button relative text-label-medium rounded-10 p-8 gap-2 text-white active:scale-[0.995]"
                               >
                                 <svg 
                                   width="20" 
@@ -666,7 +666,7 @@ export default function HomePage() {
                                 viewBox="0 0 24 24" 
                                 fill="none" 
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="text-gray-400"
+                                className="text-white/60"
                               >
                                 <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="1.5"/>
                                 <path d="M3 9H21" stroke="currentColor" strokeWidth="1.5"/>
@@ -675,7 +675,7 @@ export default function HomePage() {
                                 <circle cx="12" cy="6" r="1" fill="currentColor"/>
                               </svg>
                             </div>
-                            <p className="text-gray-500 text-sm font-medium">{result.title}</p>
+                            <p className="text-white/70 text-sm font-medium">{result.title}</p>
                           </div>
                         </div>
                       )}
@@ -688,12 +688,12 @@ export default function HomePage() {
               <div className="relative h-[250px] flex items-center justify-center">
                 <div className="text-center">
                   <div className="mb-4">
-                    <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-16 h-16 mx-auto text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
-                  <p className="text-gray-500 text-lg">No results found</p>
-                  <p className="text-gray-400 text-sm mt-1">Try a different search term</p>
+                  <p className="text-white/70 text-lg">No results found</p>
+                  <p className="text-white/50 text-sm mt-1">Try a different search term</p>
                 </div>
               </div>
             )}
@@ -782,6 +782,64 @@ export default function HomePage() {
 
         .glass-container .bg-gradient-to-r {
           animation: pulseGlow 4s ease-in-out infinite;
+        }
+
+        /* Glass Navigation Styles - Prominent White Glassy Design */
+        .glass-nav {
+          position: relative;
+          backdrop-filter: blur(25px);
+          -webkit-backdrop-filter: blur(25px);
+          background: rgba(255, 255, 255, 0.85);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .glass-nav::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, 
+            rgba(255,255,255,0.9) 0%, 
+            rgba(255,255,255,0.6) 25%,
+            rgba(255,255,255,0.8) 50%,
+            rgba(255,255,255,0.7) 75%,
+            rgba(255,255,255,0.5) 100%
+          );
+          border-radius: inherit;
+          pointer-events: none;
+          z-index: -1;
+        }
+
+        .glass-nav::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, 
+            rgba(255,255,255,0.4) 0%, 
+            transparent 50%,
+            rgba(255,255,255,0.2) 100%
+          );
+          border-radius: inherit;
+          pointer-events: none;
+          z-index: -1;
+        }
+
+        @keyframes navGlow {
+          0%, 100% { 
+            box-shadow: 
+              0 8px 32px rgba(255,255,255,0.3), 
+              0 4px 16px rgba(255,255,255,0.2),
+              inset 0 1px 0 rgba(255,255,255,0.8);
+          }
+          50% { 
+            box-shadow: 
+              0 12px 40px rgba(255,255,255,0.4), 
+              0 6px 20px rgba(255,255,255,0.3),
+              inset 0 1px 0 rgba(255,255,255,0.9);
+          }
+        }
+
+        .glass-nav {
+          animation: navGlow 3s ease-in-out infinite;
         }
       `}</style>
     </HeaderProvider>

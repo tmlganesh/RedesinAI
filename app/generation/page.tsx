@@ -3066,6 +3066,13 @@ Focus on the key sections and content, making it clean and modern.`;
                   generatedCode = data.generatedCode;
                   explanation = data.explanation;
                   
+                  console.log('[Generation] Completion received:', {
+                    hasCode: !!generatedCode,
+                    codeLength: generatedCode?.length || 0,
+                    hasExplanation: !!explanation,
+                    dataKeys: Object.keys(data)
+                  });
+                  
                   // Save the last generated code
                   setConversationContext(prev => ({
                     ...prev,
@@ -3086,7 +3093,7 @@ Focus on the key sections and content, making it clean and modern.`;
           status: 'Generation complete!'
         }));
         
-        if (generatedCode) {
+        if (generatedCode && generatedCode.trim().length > 0) {
           addChatMessage('AI recreation generated!', 'system');
           
           // Add the explanation to chat if available
@@ -3118,7 +3125,26 @@ Focus on the key sections and content, making it clean and modern.`;
             }]
           }));
         } else {
-          throw new Error('Failed to generate recreation');
+          // Better error handling for failed generation
+          console.error('Generation failed - no code generated');
+          addChatMessage(
+            `Failed to generate recreation for ${url}. This might be due to:\n` +
+            `• The content is too large for the AI model\n` +
+            `• Network connection issues with the AI provider\n` +
+            `• The selected AI model is unavailable\n\n` +
+            `Try selecting a different model (like Ollama local) or try again with a simpler website.`,
+            'ai'
+          );
+          
+          // Reset states but don't throw error to prevent crash
+          setGenerationProgress(prev => ({
+            ...prev,
+            isGenerating: false,
+            isStreaming: false,
+            status: 'Generation failed'
+          }));
+          
+          return; // Exit gracefully instead of throwing
         }
         
         setUrlInput('');
