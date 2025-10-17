@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { appConfig } from '@/config/app.config';
 import { toast } from "sonner";
@@ -39,6 +39,60 @@ export default function HomePage() {
   const [showInstructionsForIndex, setShowInstructionsForIndex] = useState<number | null>(null);
   const [additionalInstructions, setAdditionalInstructions] = useState<string>('');
   const router = useRouter();
+
+  // Interactive elements functionality
+  useEffect(() => {
+    // Cursor follower
+    const cursorFollower = document.getElementById('cursor-follower');
+    const handleMouseMove = (e: MouseEvent) => {
+      if (cursorFollower) {
+        cursorFollower.style.left = e.clientX + 'px';
+        cursorFollower.style.top = e.clientY + 'px';
+      }
+    };
+
+    // Scroll progress bar
+    const scrollProgress = document.getElementById('scroll-progress');
+    const handleScroll = () => {
+      if (scrollProgress) {
+        const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+        scrollProgress.style.width = Math.min(scrolled, 100) + '%';
+      }
+    };
+
+    // Counter animation for statistics
+    const animateCounters = () => {
+      const counters = document.querySelectorAll('.counter-animation');
+      counters.forEach((counter) => {
+        const target = parseInt(counter.textContent || '0');
+        let current = 0;
+        const increment = target / 60; // Animate over ~1 second (60fps)
+        
+        const timer = setInterval(() => {
+          current += increment;
+          if (current >= target) {
+            counter.textContent = target.toString();
+            clearInterval(timer);
+          } else {
+            counter.textContent = Math.floor(current).toString();
+          }
+        }, 16);
+      });
+    };
+
+    // Add event listeners
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('scroll', handleScroll);
+    
+    // Start counter animation after component mounts
+    setTimeout(animateCounters, 1000);
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
   
   // Simple URL validation
   const validateUrl = (urlString: string) => {
@@ -189,41 +243,79 @@ export default function HomePage() {
   return (
     <HeaderProvider>
       <div className="min-h-screen" style={{ backgroundColor: '#F9F3E8' }}>
-        {/* Glass Navigation Bar */}
-
+        {/* Enhanced Glass Navigation Bar */}
         <div className="sticky top-0 left-0 w-full z-[101] glass-nav backdrop-blur-xl bg-white/80 border-b border-white/50 shadow-xl shadow-black/10">
           <div className="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
             <HeaderBrandKit />
+            
+            {/* Interactive Navigation Elements */}
+            <div className="hidden md:flex items-center space-x-6">
+              <div className="glass-pill px-4 py-2 rounded-full bg-white/30 backdrop-blur-sm border border-white/40">
+                <span className="text-sm font-medium text-gray-700"></span>
+              </div>
+              <div className="glass-pill px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm border border-white/40">
+                <span className="text-sm font-medium text-gray-700"></span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Hero Section - Clean Modern Design */}
+        {/* Enhanced Hero Section with Interactive Elements */}
         <section className="hero-section min-h-screen relative overflow-hidden" id="home-hero">
-          {/* Subtle Background */}
+          {/* Dynamic Background System */}
           <div className="absolute inset-0">
-            {/* Warm gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 via-amber-50/30 to-yellow-50/40"></div>
+            {/* Animated gradient base */}
+            <div className="absolute inset-0 animated-gradient"></div>
             
-            {/* Elegant floating orbs with warm tones */}
-            <div className="absolute top-20 left-1/4 w-96 h-96 bg-gradient-to-r from-amber-200/30 to-orange-200/25 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-gradient-to-r from-yellow-200/25 to-amber-200/30 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-            <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-r from-orange-200/20 to-yellow-200/25 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+            {/* Interactive floating orbs */}
+            <div className="floating-orb-purple absolute top-20 left-1/4 w-96 h-96 bg-gradient-to-r from-purple-400/30 to-pink-400/25 rounded-full blur-3xl"></div>
+            <div className="floating-orb-blue absolute top-1/3 right-1/4 w-80 h-80 bg-gradient-to-r from-blue-400/25 to-cyan-400/30 rounded-full blur-3xl"></div>
+            <div className="floating-orb-green absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-r from-green-400/20 to-emerald-400/25 rounded-full blur-3xl"></div>
             
-            {/* Subtle warm grid pattern */}
-            <div className="absolute inset-0 opacity-[0.02]" style={{
-              backgroundImage: `radial-gradient(circle at 1px 1px, rgba(139,69,19,0.1) 1px, transparent 0)`,
+            {/* Interactive particles */}
+            <div className="particle-system absolute inset-0">
+              <div className="particle particle-1 absolute w-2 h-2 bg-white/60 rounded-full"></div>
+              <div className="particle particle-2 absolute w-1 h-1 bg-blue-400/80 rounded-full"></div>
+              <div className="particle particle-3 absolute w-3 h-3 bg-purple-400/60 rounded-full"></div>
+              <div className="particle particle-4 absolute w-1.5 h-1.5 bg-pink-400/70 rounded-full"></div>
+              <div className="particle particle-5 absolute w-2.5 h-2.5 bg-green-400/50 rounded-full"></div>
+            </div>
+            
+            {/* Dynamic mesh pattern */}
+            <div className="absolute inset-0 opacity-[0.03] moving-mesh" style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, rgba(139,69,19,0.15) 1px, transparent 0)`,
               backgroundSize: '40px 40px'
             }}></div>
           </div>
 
-          {/* Main Content - Centered */}
+          {/* Main Content - Enhanced with Interactive Elements */}
           <div className="relative z-10 flex items-center justify-center min-h-screen px-6">
+            {/* Animated Statistics Floating Cards */}
+            
+
+            {/* Floating Feature Pills */}
+            <div className="hidden lg:flex absolute top-32 right-8 flex-col space-y-3 opacity-90">
+              <div className="feature-pill bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm border border-white/40 rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-slideInRight">
+                <span className="text-sm font-medium text-gray-800 font-proxima-nova"></span>
+              </div>
+              <div className="feature-pill bg-gradient-to-r from-blue-500/20 to-cyan-500/20 backdrop-blur-sm border border-white/40 rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-slideInRight" style={{animationDelay: '0.3s'}}>
+                <span className="text-sm font-medium text-gray-800 font-proxima-nova"></span>
+              </div>
+              <div className="feature-pill bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm border border-white/40 rounded-full px-4 py-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-slideInRight" style={{animationDelay: '0.6s'}}>
+                <span className="text-sm font-medium text-gray-800 font-proxima-nova"></span>
+              </div>
+            </div>
+
             <div className="text-center">
               <div className="mb-8">
                 <HomeHeroTitle />
-                <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto" style={{ fontFamily: 'Proxima Nova, sans-serif' }}>
-                  Re-imagine any website, in seconds.
-                </p>
+                <div className="description-container max-w-2xl mx-auto mb-12">
+                  <p className="text-xl text-gray-600 leading-relaxed font-proxima-nova animate-fadeIn">
+                    Transform any website into your vision using the power of AI. Simply describe what you want, and watch as 
+                    <span className="text-gradient bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent font-semibold"> RedesignAI </span>
+                    brings your ideas to life instantly.
+                  </p>
+                </div>
               </div>
 
               {/* Glassmorphism Search Container */}
@@ -427,6 +519,91 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* Interactive Feature Showcase Section */}
+        <section className="feature-showcase-section py-16 relative overflow-hidden">
+          {/* Animated background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 via-blue-50/30 to-pink-50/40"></div>
+          
+          {/* Interactive feature cards */}
+          <div className="container mx-auto px-6">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4 font-proxima-nova">
+                Our Features
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto font-proxima-nova">
+                       
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {/* Feature Card 1 - Smart Analysis */}
+              <div className="feature-card group bg-white/60 backdrop-blur-md border border-white/50 rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:bg-white/80">
+                <div className="text-center">
+                  
+                  <h3 className="text-xl font-bold text-gray-800 mb-4 font-proxima-nova">Website Extraction</h3>
+                  <p className="text-gray-600 font-proxima-nova">AI analyzes website structure and suggests optimal design improvements</p>
+                </div>
+              </div>
+
+              {/* Feature Card 2 - Real-time Generation */}
+              <div className="feature-card group bg-white/60 backdrop-blur-md border border-white/50 rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:bg-white/80" style={{animationDelay: '0.2s'}}>
+                <div className="text-center">
+                  
+                  <h3 className="text-xl font-bold text-gray-800 mb-4 font-proxima-nova">Real-time Generation</h3>
+                  <p className="text-gray-600 font-proxima-nova">Watch your designs come to life in seconds with live preview updates</p>
+                </div>
+              </div>
+
+              {/* Feature Card 3 - No Code Required */}
+              <div className="feature-card group bg-white/60 backdrop-blur-md border border-white/50 rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:bg-white/80" style={{animationDelay: '0.4s'}}>
+                <div className="text-center">
+                  
+                  <h3 className="text-xl font-bold text-gray-800 mb-4 font-proxima-nova">No Code Required</h3>
+                  <p className="text-gray-600 font-proxima-nova">Simple natural language commands transform into professional websites</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Interactive Demo Button */}
+            <div className="text-center mt-12">
+              <button className="demo-button group bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-2xl font-semibold font-proxima-nova shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:from-purple-700 hover:to-blue-700">
+                <span className="flex items-center gap-3">
+                  🚀 Try Interactive Demo
+                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                  </svg>
+                </span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Floating Action Elements */}
+        <div className="fixed bottom-8 right-8 z-50 space-y-4">
+          {/* Floating Help Button */}
+          <div className="floating-help-btn group bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 cursor-pointer">
+            <svg className="w-6 h-6 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          
+          {/* Floating Tips Button */}
+          <div className="floating-tips-btn group bg-gradient-to-r from-green-500 to-emerald-500 text-white p-4 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 cursor-pointer">
+            <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            </svg>
+          </div>
+        </div>
+
+        {/* Interactive Cursor Follower */}
+        <div 
+          id="cursor-follower"
+          className="cursor-follower fixed pointer-events-none z-40 w-8 h-8 bg-gradient-to-r from-purple-400/30 to-blue-400/30 rounded-full blur-sm transition-all duration-300 ease-out hidden lg:block"
+        ></div>
+
+        {/* Progress Bar */}
+        <div id="scroll-progress" className="scroll-progress" style={{width: '0%'}}></div>
 
         {/* Full-width oval carousel section */}
         {showSearchTiles && hasSearched && (

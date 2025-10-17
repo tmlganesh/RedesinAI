@@ -1,4 +1,4 @@
-# RedesignAI 🎨✨
+# RedesignAI
 
 **Transform any website into modern, AI-powered designs in seconds**
 
@@ -10,19 +10,15 @@
 ![Tailwind](https://img.shields.io/badge/Tailwind-3.4.17-38B2AC?style=for-the-badge&logo=tailwind-css)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-**Re-imagine any website in seconds with AI-powered redesign**
-
-[🚀 Demo](#-live-demo) • [✨ Features](#-features) • [🛠 Tech Stack](#-tech-stack) • [🏗 Architecture](#-architecture-overview) • [📦 Installation](#-installation)
-
 </div>
 
 ---
 
-## 🚀 Live Demo
+## Live Demo
 
 Visit [RedesignAI](http://localhost:3000) to experience the magic of AI-powered website redesign.
 
-## 📋 Table of Contents
+##  Table of Contents
 
 - [Features](#-features)
 - [Tech Stack](#-tech-stack)
@@ -39,7 +35,7 @@ Visit [RedesignAI](http://localhost:3000) to experience the magic of AI-powered 
 - [Contributing](#-contributing)
 - [License](#-license)
 
-## ✨ Features
+##  Features
 
 ### Core Functionality
 - **URL Scraping**: Extract complete website content and metadata using Firecrawl API
@@ -158,7 +154,7 @@ const contentLimits = {
 - **Preview Generation**: Live website preview with hot reload
 - **Error Handling**: Comprehensive error detection and recovery
 
-## 🔄 Workflow
+##  Workflow
 
 ### 1. User Journey Flow
 ```mermaid
@@ -229,7 +225,7 @@ const sandbox = await createSandbox({
 });
 ```
 
-## 🤖 AI Models & Fallback System
+##  AI Models & Fallback System
 
 ### Intelligent Model Selection
 
@@ -266,7 +262,7 @@ const sandbox = await createSandbox({
 | Mistral 7B | 10-18s | 88% | Good | $ |
 | Ollama Local | 20-45s | 85% | Good | Free |
 
-## 📦 Installation
+##  Installation
 
 ### Prerequisites
 - **Node.js**: 18.0+ (LTS recommended)
@@ -320,7 +316,7 @@ npm run dev
 # Server runs on http://localhost:3000
 ```
 
-## 🔐 Environment Variables
+##  Environment Variables
 
 Create `.env.local` in the project root:
 
@@ -419,7 +415,7 @@ SENTRY_DSN=your-sentry-dsn
 
 **Free Tier**: 2,500 searches/month
 
-## 🎯 Usage
+##  Usage
 
 ### Basic Website Cloning
 
@@ -573,69 +569,69 @@ POST /api/create-ai-sandbox-v2
 }
 ```
 
-## 📁 File Structure
+##  File Structure
 
 ```
 RedesignAI/
-├── 📁 app/                          # Next.js App Router
-│   ├── 📄 globals.css              # Global styles & Proxima Nova
-│   ├── 📄 layout.tsx               # Root layout with providers
-│   ├── 📄 page.tsx                 # Homepage with search/generation
-│   ├── 📁 api/                     # API routes
-│   │   ├── 📁 generate-ai-code-stream/    # Main AI generation
-│   │   ├── 📁 scrape-url-enhanced/        # Enhanced web scraping
-│   │   ├── 📁 search/                     # Website search
-│   │   ├── 📁 create-ai-sandbox-v2/       # Sandbox creation
-│   │   ├── 📁 apply-ai-code-stream/       # Code application
-│   │   ├── 📁 scrape-screenshot/          # Screenshot capture
-│   │   └── 📁 sandbox-*/                  # Sandbox management
-│   ├── 📁 builder/                 # Interactive builder interface
-│   ├── 📁 generation/              # Generation progress page
-│   └── 📁 fonts/                   # Custom font files
-├── 📁 components/                   # React components
-│   ├── 📁 app/                     # App-specific components
-│   │   └── 📁 (home)/              # Homepage sections
-│   │       └── 📁 sections/        # Hero, input, title components
-│   ├── 📁 shared/                  # Shared components
-│   │   ├── 📁 header/              # Navigation & branding
-│   │   ├── 📁 buttons/             # Button components
-│   │   ├── 📁 icons/               # SVG icon library
-│   │   └── 📁 layout/              # Layout components
-│   └── 📁 ui/                      # Base UI components
-├── 📁 config/                      # Configuration
-│   └── 📄 app.config.ts            # AI models & settings
-├── 📁 lib/                         # Utility libraries
-│   ├── 📄 utils.ts                 # Common utilities
-│   ├── 📄 file-parser.ts           # File processing
-│   ├── 📄 edit-intent-analyzer.ts  # Intent analysis
-│   └── 📁 sandbox/                 # Sandbox utilities
-├── 📁 styles/                      # Styling system
-│   ├── 📄 main.css                 # Main stylesheet with animations
-│   ├── 📄 fire.css                 # Fire design system
-│   ├── 📄 chrome-bug.css           # Browser compatibility
-│   └── 📁 components/              # Component-specific styles
-├── 📁 types/                       # TypeScript definitions
-│   ├── 📄 conversation.ts          # Chat & conversation types
-│   ├── 📄 sandbox.ts               # Sandbox environment types
-│   └── 📄 file-manifest.ts         # File system types
-├── 📁 public/                      # Static assets
-│   ├── 📁 screenshots/             # Generated screenshots
-│   │   ├── 📁 search-results/      # Search thumbnails
-│   │   ├── 📁 scraped-sites/       # Website screenshots
-│   │   └── 📁 previews/            # Generated previews
-│   └── 📁 fonts/                   # Font files
-├── 📁 docs/                        # Documentation
-│   ├── 📄 FALLBACK_CHAIN_SYSTEM.md     # AI fallback documentation
-│   ├── 📄 COMPREHENSIVE_ERROR_HANDLING.md # Error handling guide
-│   └── 📄 UI_FEEDBACK_DEMO.md           # UI component demos
-├── 📄 next.config.ts               # Next.js configuration
-├── 📄 tailwind.config.ts           # Tailwind CSS config
-├── 📄 tsconfig.json                # TypeScript configuration
-├── 📄 package.json                 # Dependencies & scripts
-└── 📄 README.md                    # This file
+├──  app/                          # Next.js App Router
+│   ├──  globals.css              # Global styles & Proxima Nova
+│   ├──  layout.tsx               # Root layout with providers
+│   ├──  page.tsx                 # Homepage with search/generation
+│   ├──  api/                     # API routes
+│   │   ├── generate-ai-code-stream/    # Main AI generation
+│   │   ├──  scrape-url-enhanced/        # Enhanced web scraping
+│   │   ├──  search/                     # Website search
+│   │   ├──  create-ai-sandbox-v2/       # Sandbox creation
+│   │   ├──  apply-ai-code-stream/       # Code application
+│   │   ├──  scrape-screenshot/          # Screenshot capture
+│   │   └──  sandbox-*/                  # Sandbox management
+│   ├──  builder/                 # Interactive builder interface
+│   ├──  generation/              # Generation progress page
+│   └──  fonts/                   # Custom font files
+├── components/                   # React components
+│   ├──  app/                     # App-specific components
+│   │   └──  (home)/              # Homepage sections
+│   │       └──  sections/        # Hero, input, title components
+│   ├──  shared/                  # Shared components
+│   │   ├──  header/              # Navigation & branding
+│   │   ├──  buttons/             # Button components
+│   │   ├──  icons/               # SVG icon library
+│   │   └──  layout/              # Layout components
+│   └──  ui/                      # Base UI components
+├── config/                      # Configuration
+│   └── app.config.ts            # AI models & settings
+├──  lib/                         # Utility libraries
+│   ├──  utils.ts                 # Common utilities
+│   ├──  file-parser.ts           # File processing
+│   ├──  edit-intent-analyzer.ts  # Intent analysis
+│   └──  sandbox/                 # Sandbox utilities
+├──  styles/                      # Styling system
+│   ├──  main.css                 # Main stylesheet with animations
+│   ├──  fire.css                 # Fire design system
+│   ├──  chrome-bug.css           # Browser compatibility
+│   └──  components/              # Component-specific styles
+├──  types/                       # TypeScript definitions
+│   ├──  conversation.ts          # Chat & conversation types
+│   ├──  sandbox.ts               # Sandbox environment types
+│   └──  file-manifest.ts         # File system types
+├── public/                      # Static assets
+│   ├── screenshots/             # Generated screenshots
+│   │   ├──  search-results/      # Search thumbnails
+│   │   ├──  scraped-sites/       # Website screenshots
+│   │   └──  previews/            # Generated previews
+│   └── fonts/                   # Font files
+├──  docs/                        # Documentation
+│   ├── FALLBACK_CHAIN_SYSTEM.md     # AI fallback documentation
+│   ├──  COMPREHENSIVE_ERROR_HANDLING.md # Error handling guide
+│   └──  UI_FEEDBACK_DEMO.md           # UI component demos
+├──  next.config.ts               # Next.js configuration
+├──  tailwind.config.ts           # Tailwind CSS config
+├──  tsconfig.json                # TypeScript configuration
+├──  package.json                 # Dependencies & scripts
+└──  README.md                    # This file
 ```
 
-## 📸 Screenshots & Assets
+##  Screenshots & Assets
 
 ### Storage Architecture
 
@@ -1098,7 +1094,7 @@ Custom Tailwind setup with:
 
 ---
 
-## 🌟 Features in Detail
+##  Features in Detail
 
 ### 1. Smart Context Selection
 The system intelligently selects relevant files to send to the AI based on:
@@ -1155,47 +1151,6 @@ npm run lint
 
 See [Getting Started](#-getting-started) section for complete list of environment variables.
 
----
 
-## 🤝 Contributing
-
-This is a private repository. For contributors:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
+##  License
 This project is private and proprietary. All rights reserved.
-
----
-
-## 🙏 Acknowledgments
-
-- **Firecrawl** for powerful web scraping capabilities
-- **Vercel** for Next.js and sandbox infrastructure
-- **E2B** for code execution sandboxes
-- **Anthropic, OpenAI, Google, Groq** for AI models
-- **Radix UI** for accessible component primitives
-- **shadcn/ui** for component inspiration
-
----
-
-## 📞 Support
-
-For issues, questions, or feature requests, please contact the development team or open an issue in the repository.
-
----
-
-<div align="center">
-
-**Built with ❤️ by the RedesignAI Team**
-
-Powered by [Firecrawl](https://firecrawl.dev) • [Next.js](https://nextjs.org) • [Vercel AI SDK](https://sdk.vercel.ai)
-
-</div>
